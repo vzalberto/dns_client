@@ -1,5 +1,9 @@
 #define OCTECT 				"octet"
 #define DNS_HEADER_LEN		12
+#define RECURSIVE_DNS		256
+#define DNS_TYPE_A			1
+#define DNS_QCLASS_IN		1
+#define DNS_MAX_QUESTION	300
 
 /*
 	Flags:
@@ -16,8 +20,16 @@ struct dnsHeader{
 	unsigned short ar;
 };
 
-struct dnsHeader* dnsStdQueryHeader(int questionLen){
-	struct dnsHeader* p = malloc(DNS_HEADER_LEN + questionLen);
+
+struct dnsQuestion{
+	unsigned char	qlen;
+	unsigned char**	domain;
+	unsigned short	type;
+	unsigned short 	qclass;
+};
+
+struct dnsHeader* dnsStdQueryHeader(){
+	struct dnsHeader* p = malloc(DNS_HEADER_LEN);
 	if(p != NULL){
 		memset(p, 0, DNS_HEADER_LEN);
 		return p;
