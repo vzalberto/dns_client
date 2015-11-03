@@ -1,10 +1,11 @@
 #define OCTECT 				"octet"
 #define DNS_HEADER_LEN		12
+#define DNS_QUESTION_LEN	13
+
 #define RECURSIVE_DNS		256
 #define DNS_TYPE_A			1
 #define DNS_QCLASS_IN		1
 #define DNS_MAX_QUESTION	300
-#define DNS_QUESTION_LEN	13
 
 /*
 	Flags:
@@ -20,7 +21,6 @@ struct dnsHeader{
 	unsigned short ns;
 	unsigned short ar;
 };
-
 
 struct dnsQuestion{
 	unsigned char	qlen;

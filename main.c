@@ -41,9 +41,9 @@ int main(int argc, char** argv){
 	printf("Building header...\n");
 	header = dnsStdQueryHeader();
 
-	header->id 		= 1;
-	header->flags 	= RECURSIVE_DNS;
-	header->qd = 1;
+	header->id 		= 0;
+	header->flags 	= htons(RECURSIVE_DNS);
+	header->qd = htons(1);
 	header->an = 0;
 	header->ns = 0;
 	header->ar = 0;
@@ -66,22 +66,23 @@ int main(int argc, char** argv){
 
 		memcpy(question->domain, argv[2], questionLen + 1);
 
-		question->type = 1;
-		question->qclass = 1;
+		question->type = htons(1);
+		question->qclass = htons(1);
 
 	/*
 		Send Message
 	*/	
+		unsigned char* msg = malloc(700);
 		unsigned char* aux = malloc(DNS_HEADER_LEN + DNS_QUESTION_LEN);
 
-		memcpy(aux, header, DNS_HEADER_LEN);
-		memset(aux + DNS_HEADER_LEN, question->qlen, 1);
-		memcpy(aux + DNS_HEADER_LEN + 1, question->domain, question->qlen);
-		memset(aux + question->qlen, 0, 1);
-		memcpy(aux + question->qlen + 1, &question->type, 4);
+		memcpy(msg, header, DNS_HEADER_LEN);
+		memset(msg + DNS_HEADER_LEN, question->qlen, 1);
+		memcpy(msg + DNS_HEADER_LEN + 1, question->domain, question->qlen);
+		memset(msg + DNS_HEADER_LEN + 1 + questionLen, 0, 1);
+		memcpy(msg + DNS_HEADER_LEN + 2 + questionLen, &question->type, 4);
 
 
-	int hi = sendto(sock_udp, aux, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
+	int hi = sendto(sock_udp, msg, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	if(hi <= 0)
 		perror("sendto");
 
@@ -89,6 +90,7 @@ int main(int argc, char** argv){
 
 	//free(header);
 	//free(question);
+	free(msg);
 	free(aux);
 	close(sock_udp);
 
