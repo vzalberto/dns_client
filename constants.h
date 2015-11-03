@@ -4,6 +4,7 @@
 #define DNS_TYPE_A			1
 #define DNS_QCLASS_IN		1
 #define DNS_MAX_QUESTION	300
+#define DNS_QUESTION_LEN	13
 
 /*
 	Flags:
@@ -23,12 +24,12 @@ struct dnsHeader{
 
 struct dnsQuestion{
 	unsigned char	qlen;
-	unsigned char**	domain;
+	unsigned char*	domain;
 	unsigned short	type;
 	unsigned short 	qclass;
 };
 
-struct dnsHeader* dnsStdQueryHeader(){
+struct dnsHeader* dnsStdQueryHeader(){							//should I reuse this function?
 	struct dnsHeader* p = malloc(DNS_HEADER_LEN);
 	if(p != NULL){
 		memset(p, 0, DNS_HEADER_LEN);
@@ -36,6 +37,22 @@ struct dnsHeader* dnsStdQueryHeader(){
 	}
 	else{
 		perror(":(");
+		exit(-1);
+		return NULL;
+	}
+}
+
+struct dnsQuestion* dnsQuestionCreator(int qlen){
+	struct dnsQuestion* p = malloc(DNS_QUESTION_LEN);
+	if(p != NULL){
+		memset(p, 0, qlen);
+		p->qlen = qlen;
+		p->domain = malloc(qlen);
+		return p;
+	}
+	else
+	{
+		perror("Question :(");
 		exit(-1);
 		return NULL;
 	}
