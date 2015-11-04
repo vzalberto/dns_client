@@ -6,6 +6,7 @@
 #define DNS_TYPE_A			1
 #define DNS_QCLASS_IN		1
 #define DNS_MAX_QUESTION	300
+#define DNS_MAX_RESPONSE	1500
 
 /*
 	Flags:
@@ -27,6 +28,25 @@ struct dnsQuestion{
 	unsigned char*	domain;
 	unsigned short	type;
 	unsigned short 	qclass;
+};
+
+struct dnsReply{
+	unsigned short id;
+
+	unsigned int qr:1;
+	unsigned int op:4;
+	unsigned int aa:1;
+	unsigned int tc:1;
+	unsigned int rd:1;
+	unsigned int ra:1;
+	unsigned int z:3; 
+	unsigned int rcode:4;
+	
+	unsigned short qd;
+	unsigned short an;
+	unsigned short ns;
+	unsigned short ar;
+
 };
 
 struct dnsHeader* dnsStdQueryHeader(){							//should I reuse this function?
