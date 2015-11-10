@@ -89,3 +89,59 @@ void memoryPrint(unsigned char* start, int bytes){
 	printf("\n");
 
 }
+
+int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
+
+	int questionLen;
+
+	struct dnsHeader* 	header;
+	struct dnsQuestion*	question;
+
+	/*
+		Build Header
+	*/
+
+	header = dnsStdQueryHeader();
+
+	header->id 		= 0;
+	header->flags 	= htons(RECURSIVE_DNS);
+	header->qd = htons(1);
+	header->an = 0;
+	header->ns = 0;
+	header->ar = 0;
+
+	
+	/*
+		Build Question
+	*/
+
+	questionLen = strlen(url);
+
+	question = dnsQuestionCreator(questionLen);
+	memcpy(question->domain, url, questionLen + 1);
+
+	question->type = htons(1);
+	question->qclass = htons(1);
+
+	/*
+		Send Message
+	*/	
+
+	unsigned char* msg = malloc(700);
+
+	memcpy(msg, header, DNS_HEADER_LEN);
+	memset(msg + DNS_HEADER_LEN, question->qlen, 1);
+	memcpy(msg + DNS_HEADER_LEN + 1, question->domain, question->qlen);
+	memset(msg + DNS_HEADER_LEN + 1 + questionLen, 0, 1);
+	memcpy(msg + DNS_HEADER_LEN + 2 + questionLen, &question->type, 4);
+
+	int hi = sendto(sock_udp, msg, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)serverAddr, sizeof(*serverAddr));
+	if(hi <= 0)
+		perror("sendto");
+
+	printf("Sent: %d bytes\n", hi);
+
+	free(msg);
+
+	return hi;
+}
