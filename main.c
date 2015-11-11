@@ -50,12 +50,12 @@ int main(int argc, char** argv){
 		n = sizeof(reply_addr);
 
 		while(inBytes < 0){
-			inBytes = recvfrom(sock_udp, buffer, DNS_MAX_RESPONSE, 0, &reply_addr, &n);
+			inBytes = recvfrom(sock_udp, buffer, DNS_MAX_RESPONSE, 0, &reply_addr, (socklen_t*)&n);
+
+			parseDNS(inBytes, buffer);
 
 		}
 	}
-
-	
 
 	close(sock_udp);
 

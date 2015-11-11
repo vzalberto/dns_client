@@ -90,6 +90,10 @@ void memoryPrint(unsigned char* start, int bytes){
 
 }
 
+int parseDNS(int inBytes, unsigned char* buffer){
+	return 0;
+}
+
 int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 
 	int questionLen;
@@ -103,7 +107,7 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 
 	header = dnsStdQueryHeader();
 
-	header->id 		= 0;
+	header->id 		= htons(1000);
 	header->flags 	= htons(RECURSIVE_DNS);
 	header->qd = htons(1);
 	header->an = 0;
@@ -145,3 +149,4 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 
 	return hi;
 }
+
