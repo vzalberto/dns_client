@@ -39,8 +39,8 @@ struct dnsReply{
 	unsigned int tc:1;
 	unsigned int rd:1;
 	unsigned int ra:1;
-	unsigned int z:3; 
-	unsigned int rcode:4;
+	unsigned int z:4; 
+	unsigned int rcode:1;
 	
 	unsigned short qd;
 	unsigned short an;
@@ -48,6 +48,94 @@ struct dnsReply{
 	unsigned short ar;
 
 };
+
+void printDNSmsg(struct dnsReply* msg){
+	unsigned short rcode;
+	rcode = ntohs(msg->rcode);
+
+	printf("\nDNS HEADER:\n\n");
+
+	printf("ID:\t%x\n", ntohs(msg->id));
+
+	if(msg->qr)
+		printf("QR:\tReply (%d)\n", msg->qr);
+	else
+		printf("QR:\tRequest (%d)\n", msg->qr);
+
+
+	printf("Opcode:\t");
+	switch(msg->op){
+		case 0:
+			printf("Standard Query (0)\n");
+			break;
+		case 1:
+			printf("Inverse Query(1)\n");
+			break;
+		case 2:
+			printf("Server Status\n");
+			break;
+		default:
+			printf(":(\n");
+			break;
+	}
+
+	if(msg->aa)
+		printf("AA:\tServer is authority\n");
+	else
+		printf("AA:\tServer is NOT authority\n");
+
+	if(msg->tc)
+		printf("TC:\tMessage is truncated\n");
+	else
+		printf("TC:\tMessage is NOT truncated\n");
+
+	if(msg->rd)
+		printf("RD:\tRecursion desired\n");
+	else
+		printf("RD:\tRecursion is not desired\n");
+
+	if(msg->ra)
+		printf("RA:\tRecursion available\n");
+	else
+		printf("RA:\tRecursion is not available\n");
+
+	printf("Z(0):\tReserved\n");
+
+	printf("RCODE (%d): \t", rcode);
+	switch(rcode){
+
+		case 0:
+			printf("No error\n");
+			break;
+		case 1:
+			printf("Format error\n");
+			break;
+		case 2:
+			printf("Server failure\n");
+			break;
+		case 3:
+			printf("Name error\n");
+			break;
+		case 4:
+			printf("Not implemented\n");
+			break;
+		case 5:
+			printf("Refused\n");
+			break;
+		default:
+			printf("Unknown\n");
+			break;	
+	}
+
+	printf("QDCOUNT:\t%d\n", ntohs(msg->qd));
+
+	printf("ANCOUNT:\t%d\n", ntohs(msg->an));
+
+	printf("NSCOUNT:\t%d\n", ntohs(msg->ns));
+
+	printf("ARCOUNT:\t%d\n", ntohs(msg->ar));
+
+}
 
 struct dnsHeader* dnsStdQueryHeader(){							//should I reuse this function?
 	struct dnsHeader* p = malloc(DNS_HEADER_LEN);

@@ -52,7 +52,7 @@ int main(int argc, char** argv){
 		while(inBytes < 0){
 			inBytes = recvfrom(sock_udp, buffer, DNS_MAX_RESPONSE, 0, &reply_addr, (socklen_t*)&n);
 
-			parseDNS(inBytes, buffer);
+			printDNSmsg((struct dnsReply*)buffer);
 
 		}
 	}
