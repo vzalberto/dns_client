@@ -3,6 +3,7 @@
 #define DNS_QUESTION_LEN	13
 
 #define RECURSIVE_DNS		256
+#define DNS_LABEL_SIZE		72
 #define DNS_TYPE_A			1
 #define DNS_QCLASS_IN		1
 #define DNS_MAX_QUESTION	300
@@ -28,6 +29,11 @@ struct dnsQuestion{
 	unsigned char*	domain;
 	unsigned short	type;
 	unsigned short 	qclass;
+};
+
+struct dnsLabel{
+	unsigned short	bytes;
+			void*	segment;
 };
 
 struct dnsReply{
@@ -179,7 +185,37 @@ void memoryPrint(unsigned char* start, int bytes){
 }
 
 int parseDNS(int inBytes, unsigned char* buffer){
+
 	return 0;
+}
+
+unsigned char* parseLabels(char* url){
+	unsigned char* qname = malloc(1500);
+
+	unsigned short total_bytes;
+	unsigned short total_labels;
+
+	unsigned char lenght;
+
+	char* aux;
+
+	total_labels = 0;
+	total_bytes	 = 0;
+	aux = strtok(url, ".");
+
+	while(aux != NULL){
+		lenght = (unsigned char)strlen(aux);
+
+		memcpy(qname + total_bytes, &lenght, 1);
+		memcpy(qname + total_bytes + 1, aux, lenght);
+
+		total_labels++;
+		total_bytes+=lenght;
+		total_bytes++;
+		aux = strtok(NULL, ".");
+	}
+
+	return qname;
 }
 
 int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){

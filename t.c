@@ -6,6 +6,12 @@
 
 
 int main(){
+
+	unsigned char* labels;
+	labels = parseLabels("taktaktak.com");
+	printf(labels);
+
+/*
 	struct dnsReply dns;
 
 	dns.id = 7;
@@ -30,7 +36,7 @@ int main(){
 
 	printf("\nDNS: %d\n", *p);
 		printf("\nDNS: %x\n", *(p+4));
-	
+	*/
 
 
 }
