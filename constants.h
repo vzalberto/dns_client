@@ -190,14 +190,15 @@ int parseDNS(int inBytes, unsigned char* buffer){
 }
 
 unsigned char* parseLabels(char* url){
-	unsigned char* qname = malloc(1500);
+	unsigned char* qname;
+	qname = malloc(1500);
 
 	unsigned short total_bytes;
 	unsigned short total_labels;
 
 	unsigned char lenght;
 
-	char* aux;
+	char* aux = malloc(1500);
 
 	total_labels = 0;
 	total_bytes	 = 0;
@@ -220,7 +221,7 @@ unsigned char* parseLabels(char* url){
 
 int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 
-	int questionLen;
+	int questionLen, hi;
 
 	struct dnsHeader* 	header;
 	struct dnsQuestion*	question;
@@ -237,7 +238,6 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 	header->an = 0;
 	header->ns = 0;
 	header->ar = 0;
-
 	
 	/*
 		Build Question
@@ -263,7 +263,7 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 	memset(msg + DNS_HEADER_LEN + 1 + questionLen, 0, 1);
 	memcpy(msg + DNS_HEADER_LEN + 2 + questionLen, &question->type, 4);
 
-	int hi = sendto(sock_udp, msg, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)serverAddr, sizeof(*serverAddr));
+	hi = sendto(sock_udp, msg, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)serverAddr, sizeof(&serverAddr));
 	if(hi <= 0)
 		perror("sendto");
 
