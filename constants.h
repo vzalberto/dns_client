@@ -25,8 +25,8 @@ struct dnsHeader{
 };
 
 struct dnsQuestion{
-	unsigned char	qlen;
-	unsigned char*	domain;
+	unsigned short	qlen;
+	unsigned char*	qname;
 	unsigned short	type;
 	unsigned short 	qclass;
 };
@@ -189,9 +189,9 @@ int parseDNS(int inBytes, unsigned char* buffer){
 	return 0;
 }
 
-unsigned char* parseLabels(char* url){
-	unsigned char* qname;
-	qname = malloc(1500);
+unsigned char* parseLabels(char* url, unsigned char* qnameAddr){
+	const char s[2] = ".";
+	unsigned char* qname = malloc(1500);
 
 	unsigned short total_bytes;
 	unsigned short total_labels;
@@ -202,7 +202,7 @@ unsigned char* parseLabels(char* url){
 
 	total_labels = 0;
 	total_bytes	 = 0;
-	aux = strtok(url, ".");
+	aux = strtok(strdup(url), s);
 
 	while(aux != NULL){
 		lenght = (unsigned char)strlen(aux);
@@ -213,10 +213,30 @@ unsigned char* parseLabels(char* url){
 		total_labels++;
 		total_bytes+=lenght;
 		total_bytes++;
-		aux = strtok(NULL, ".");
+		aux = strtok(NULL, s);
 	}
 
-	return qname;
+	free(aux);
+	*(qnameAddr) = qname;
+	return total_bytes;
+}
+
+struct dnsQuestion* buildQuestion(char* url){
+	struct dnsQuestion* p = malloc(DNS_QUESTION_LEN);
+	if(p != NULL){
+
+		p->qname = parseLabels(url);
+
+		p->type = htons(1);
+		p->qclass = htons(1);
+	}
+	else
+	{
+		perror("Question :(\n");
+			exit(-1);
+			return NULL;
+	}
+
 }
 
 int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
@@ -243,27 +263,25 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 		Build Question
 	*/
 
-	questionLen = strlen(url);
-
-	question = dnsQuestionCreator(questionLen);
-	memcpy(question->domain, url, questionLen + 1);
-
-	question->type = htons(1);
-	question->qclass = htons(1);
-
 	/*
 		Send Message
 	*/	
 
 	unsigned char* msg = malloc(700);
 
+	//Se copia el encabezado
 	memcpy(msg, header, DNS_HEADER_LEN);
-	memset(msg + DNS_HEADER_LEN, question->qlen, 1);
+
+	//memcpy(msg + DNS_HEADER_LEN, parseLabels(url), );
+
+/*	memset(msg + DNS_HEADER_LEN, question->qlen, 1);
 	memcpy(msg + DNS_HEADER_LEN + 1, question->domain, question->qlen);
 	memset(msg + DNS_HEADER_LEN + 1 + questionLen, 0, 1);
+*/
+	//Se copia la clase
 	memcpy(msg + DNS_HEADER_LEN + 2 + questionLen, &question->type, 4);
 
-	hi = sendto(sock_udp, msg, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)serverAddr, sizeof(&serverAddr));
+	hi = sendto(sock_udp, msg, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)serverAddr, sizeof(*serverAddr));
 	if(hi <= 0)
 		perror("sendto");
 
