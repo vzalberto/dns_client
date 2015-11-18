@@ -2,7 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-unsigned char* parseLabels(char* url){
+struct dnsQuestion{
+	unsigned short	qlen;
+	unsigned char*	qname;
+	unsigned short	type;
+	unsigned short 	qclass;
+};
+
+unsigned short parseLabels(char* url, unsigned char* qnameAddr){
 	const char s[2] = ".";
 	unsigned char* qname = malloc(1500);
 
@@ -29,40 +36,19 @@ unsigned char* parseLabels(char* url){
 		aux = strtok(NULL, s);
 	}
 
-	return qname;
+	qnameAddr = qname;
+	return total_bytes;
 }
 
+
 int main(){
+	struct dnsQuestion* question = malloc(16);
 
-	parseLabels("www.escom.ipn.mx");
-	//printf(labels);
+	question->qlen = parseLabels("www.escom.ipn.mx", question->qname);
+	question->type = htons(1);
+	question->qclass = htons(1);
 
-/*
-	struct dnsReply dns;
+	free(question);
 
-	dns.id = 7;
-
-	dns.qr = 0;
-	dns.op = 2;
-	dns.aa = 0;
-	dns.tc = 0;
-	dns.rd = 1;
-	dns.ra = 0;
-	dns.z = 0;
-	dns.rcode = 0;
-
-	dns.qd = 2;
-	dns.an = 0;
-	dns.ns = 0;
-	dns.ar = 8;
-
-	short* p;
-
-	p = (short*)&dns;
-
-	printf("\nDNS: %d\n", *p);
-		printf("\nDNS: %x\n", *(p+4));
-	*/
-
-		return 0;
+	return 0;
 }

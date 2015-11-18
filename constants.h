@@ -1,3 +1,12 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+
 #define OCTECT 				"octet"
 #define DNS_HEADER_LEN		12
 #define DNS_QUESTION_LEN	13
@@ -156,21 +165,21 @@ struct dnsHeader* dnsStdQueryHeader(){							//should I reuse this function?
 	}
 }
 
-struct dnsQuestion* dnsQuestionCreator(int qlen){
-	struct dnsQuestion* p = malloc(DNS_QUESTION_LEN);
-	if(p != NULL){
-		memset(p, 0, qlen);
-		p->qlen = qlen;
-		p->domain = malloc(qlen);
-		return p;
-	}
-	else
-	{
-		perror("Question :(");
-		exit(-1);
-		return NULL;
-	}
-}
+// struct dnsQuestion* dnsQuestionCreator(int qlen){
+// 	struct dnsQuestion* p = malloc(DNS_QUESTION_LEN);
+// 	if(p != NULL){
+// 		memset(p, 0, qlen);
+// 		p->qlen = qlen;
+// 		p->domain = malloc(qlen);
+// 		return p;
+// 	}
+// 	else
+// 	{
+// 		perror("Question :(");
+// 		exit(-1);
+// 		return NULL;
+// 	}
+// }
 
 void memoryPrint(unsigned char* start, int bytes){
 	int i;
@@ -189,7 +198,7 @@ int parseDNS(int inBytes, unsigned char* buffer){
 	return 0;
 }
 
-unsigned char* parseLabels(char* url, unsigned char* qnameAddr){
+unsigned short parseLabels(char* url, unsigned char* qnameAddr){
 	const char s[2] = ".";
 	unsigned char* qname = malloc(1500);
 
@@ -217,7 +226,7 @@ unsigned char* parseLabels(char* url, unsigned char* qnameAddr){
 	}
 
 	free(aux);
-	*(qnameAddr) = qname;
+	qnameAddr = qname;
 	return total_bytes;
 }
 
@@ -225,7 +234,7 @@ struct dnsQuestion* buildQuestion(char* url){
 	struct dnsQuestion* p = malloc(DNS_QUESTION_LEN);
 	if(p != NULL){
 
-		p->qname = parseLabels(url);
+		p->qlen = parseLabels(url, p->qname);
 
 		p->type = htons(1);
 		p->qclass = htons(1);
@@ -281,7 +290,7 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 	//Se copia la clase
 	memcpy(msg + DNS_HEADER_LEN + 2 + questionLen, &question->type, 4);
 
-	hi = sendto(sock_udp, msg, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)serverAddr, sizeof(*serverAddr));
+	hi = sendto(sock_udp, msg, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)serverAddr, sizeof(serverAddr));
 	if(hi <= 0)
 		perror("sendto");
 
