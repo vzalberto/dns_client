@@ -34,10 +34,10 @@ struct dnsHeader{
 };
 
 struct dnsQuestion{
-	unsigned short	qlen;
 	unsigned char*	qname;
 	unsigned short	type;
-	unsigned short 	qclass;
+	unsigned short 	qclass;	
+	unsigned short	qlen;
 };
 
 struct dnsLabel{
@@ -193,11 +193,6 @@ void memoryPrint(unsigned char* start, int bytes){
 
 }
 
-int parseDNS(int inBytes, unsigned char* buffer){
-
-	return 0;
-}
-
 unsigned short parseLabels(char* url, unsigned char* qnameAddr){
 	const char s[2] = ".";
 	unsigned char* qname = malloc(1500);
@@ -238,6 +233,8 @@ struct dnsQuestion* buildQuestion(char* url){
 
 		p->type = htons(1);
 		p->qclass = htons(1);
+
+		return p;
 	}
 	else
 	{
@@ -250,7 +247,7 @@ struct dnsQuestion* buildQuestion(char* url){
 
 int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 
-	int questionLen, hi;
+	int hi;
 
 	struct dnsHeader* 	header;
 	struct dnsQuestion*	question;
@@ -272,8 +269,10 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 		Build Question
 	*/
 
+	question = buildQuestion(url);
+
 	/*
-		Send Message
+		Build Message
 	*/	
 
 	unsigned char* msg = malloc(700);
@@ -281,16 +280,20 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 	//Se copia el encabezado
 	memcpy(msg, header, DNS_HEADER_LEN);
 
-	//memcpy(msg + DNS_HEADER_LEN, parseLabels(url), );
+	//Copy Qname
 
-/*	memset(msg + DNS_HEADER_LEN, question->qlen, 1);
-	memcpy(msg + DNS_HEADER_LEN + 1, question->domain, question->qlen);
-	memset(msg + DNS_HEADER_LEN + 1 + questionLen, 0, 1);
-*/
-	//Se copia la clase
-	memcpy(msg + DNS_HEADER_LEN + 2 + questionLen, &question->type, 4);
+	memcpy(msg + DNS_HEADER_LEN, question, question->qlen);
 
-	hi = sendto(sock_udp, msg, DNS_HEADER_LEN + questionLen + 6, 0, (struct sockaddr*)serverAddr, sizeof(serverAddr));
+	//Copy Type & Class
+
+	memcpy(msg + DNS_HEADER_LEN + question->qlen, &question->qclass, 4);
+
+
+	/*
+		Send Message
+	*/
+
+	hi = sendto(sock_udp, msg, (DNS_HEADER_LEN + question->qlen + 4), 0, (struct sockaddr*)serverAddr, sizeof(*serverAddr));
 	if(hi <= 0)
 		perror("sendto");
 
