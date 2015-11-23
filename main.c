@@ -51,7 +51,7 @@ int main(int argc, char** argv){
 
 		while(inBytes < 0){
 			inBytes = recvfrom(sock_udp, buffer, DNS_MAX_RESPONSE, 0, &reply_addr, (socklen_t*)&n);
-
+			printf("\nIn Bytes: %d\n", inBytes);
 			printDNSmsg((struct dnsReply*)buffer);
 
 		}

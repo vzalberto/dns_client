@@ -62,6 +62,8 @@ struct dnsReply{
 	unsigned short ns;
 	unsigned short ar;
 
+	
+
 };
 
 void printDNSmsg(struct dnsReply* msg){
@@ -164,22 +166,6 @@ struct dnsHeader* dnsStdQueryHeader(){							//should I reuse this function?
 		return NULL;
 	}
 }
-
-// struct dnsQuestion* dnsQuestionCreator(int qlen){
-// 	struct dnsQuestion* p = malloc(DNS_QUESTION_LEN);
-// 	if(p != NULL){
-// 		memset(p, 0, qlen);
-// 		p->qlen = qlen;
-// 		p->domain = malloc(qlen);
-// 		return p;
-// 	}
-// 	else
-// 	{
-// 		perror("Question :(");
-// 		exit(-1);
-// 		return NULL;
-// 	}
-// }
 
 void memoryPrint(unsigned char* start, int bytes){
 	int i;
@@ -285,10 +271,10 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 	question = buildQuestion(url);
 
 
-		printf("\np.qlen: %d\n", question->qlen);
-		printf("\np.qname: %s\n", question->qname);
-		printf("\np.type: %d\n", ntohs(question->type));
-		printf("\np.qclass: %d\n", ntohs(question->qclass));
+		// printf("\np.qlen: %d\n", question->qlen);
+		// printf("\np.qname: %s\n", question->qname);
+		// printf("\np.type: %d\n", ntohs(question->type));
+		// printf("\np.qclass: %d\n", ntohs(question->qclass));
 
 	/*
 		Build Message
