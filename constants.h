@@ -42,7 +42,7 @@ struct dnsQuestion{
 
 struct dnsLabel{
 	unsigned short	bytes;
-			void*	segment;
+	unsigned char*	name;
 };
 
 struct dnsReply{
@@ -193,7 +193,7 @@ void memoryPrint(unsigned char* start, int bytes){
 
 }
 
-unsigned short parseLabels(char* url, unsigned char* qnameAddr){
+struct dnsLabel* parseLabels(char* url){
 	const char s[2] = ".";
 	unsigned char* qname = malloc(1500);
 
@@ -201,6 +201,9 @@ unsigned short parseLabels(char* url, unsigned char* qnameAddr){
 	unsigned short total_labels;
 
 	unsigned char lenght;
+
+	struct dnsLabel* label;
+	label = malloc(16);
 
 	char* aux = malloc(1500);
 
@@ -220,16 +223,26 @@ unsigned short parseLabels(char* url, unsigned char* qnameAddr){
 		aux = strtok(NULL, s);
 	}
 
+	memset(qname + total_bytes, 0x00, 1);
+
 	free(aux);
-	qnameAddr = qname;
-	return total_bytes;
+	printf("qname: (parse) %s\n", qname);
+
+	label->bytes = total_bytes+1;
+	label->name = qname;
+
+	return label;
 }
 
 struct dnsQuestion* buildQuestion(char* url){
 	struct dnsQuestion* p = malloc(DNS_QUESTION_LEN);
+	struct dnsLabel* label;
 	if(p != NULL){
 
-		p->qlen = parseLabels(url, p->qname);
+		label = parseLabels(url);
+
+		p->qname = label->name;
+		p->qlen = label->bytes;
 
 		p->type = htons(1);
 		p->qclass = htons(1);
@@ -271,6 +284,12 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 
 	question = buildQuestion(url);
 
+
+		printf("\np.qlen: %d\n", question->qlen);
+		printf("\np.qname: %s\n", question->qname);
+		printf("\np.type: %d\n", ntohs(question->type));
+		printf("\np.qclass: %d\n", ntohs(question->qclass));
+
 	/*
 		Build Message
 	*/	
@@ -282,11 +301,11 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 
 	//Copy Qname
 
-	memcpy(msg + DNS_HEADER_LEN, question, question->qlen);
+	memcpy(msg + DNS_HEADER_LEN, question->qname, question->qlen);
 
 	//Copy Type & Class
 
-	memcpy(msg + DNS_HEADER_LEN + question->qlen, &question->qclass, 4);
+	memcpy(msg + DNS_HEADER_LEN + question->qlen, &question->type, 4);
 
 
 	/*
