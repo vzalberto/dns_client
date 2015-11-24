@@ -62,8 +62,6 @@ struct dnsReply{
 	unsigned short ns;
 	unsigned short ar;
 
-	
-
 };
 
 void printDNSmsg(struct dnsReply* msg){
@@ -212,7 +210,6 @@ struct dnsLabel* parseLabels(char* url){
 	memset(qname + total_bytes, 0x00, 1);
 
 	free(aux);
-	printf("qname: (parse) %s\n", qname);
 
 	label->bytes = total_bytes+1;
 	label->name = qname;
@@ -303,9 +300,9 @@ int sendDNS(int sock_udp, struct sockaddr_in* serverAddr, char* url){
 		perror("sendto");
 
 	printf("Sent: %d bytes\n", hi);
+	
 
 	free(msg);
 
 	return hi;
 }
-
