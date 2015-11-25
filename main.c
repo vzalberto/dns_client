@@ -11,7 +11,8 @@
 #include "constants.h"
 
 int main(int argc, char** argv){
-	int sock_udp, s, n, fd[2], sent_bytes, pipe_msg;
+	int sock_udp, s, n, fd[2], sent_bytes;
+	int* pipe_msg;
 	pid_t childPID;
 
 	unsigned char buf[sizeof(struct in_addr)];
@@ -22,12 +23,13 @@ int main(int argc, char** argv){
 	
 	struct sockaddr_in 	serverAddr;
 
+	pipe_msg = malloc(sizeof(int));
+	in_buf = malloc(sizeof(int));
+	out_buf = malloc(sizeof(int));
+
 	/*
 	Aqui empieza lo chido
 	*/
-
-	in_buf = NULL;
-	out_buf = NULL;
 
 	sock_udp = socket(AF_INET, SOCK_DGRAM, 0);
 	childPID = fork();
@@ -53,10 +55,13 @@ int main(int argc, char** argv){
 		close(fd[0]);
 
 		sent_bytes = sendDNS(sock_udp, &serverAddr, argv[2]);
-		printf("\nSicierto o nocierto: %d", sent_bytes);
+
+		printf("\nSicierto o nocierto: %d\n", sent_bytes);
+		
 		memcpy(in_buf, &sent_bytes, sizeof(sent_bytes));
 
 		write(fd[1], in_buf, sizeof(sent_bytes));
+		exit(0);
 
 	}
 	else{
@@ -71,14 +76,17 @@ int main(int argc, char** argv){
 			inBytes = recvfrom(sock_udp, buffer, DNS_MAX_RESPONSE, 0, &reply_addr, (socklen_t*)&n);
 			
 			read(fd[0], out_buf, sizeof(sent_bytes));
-			memcpy(&pipe_msg, out_buf, sizeof(sent_bytes));
+			memcpy(pipe_msg, out_buf, sizeof(sent_bytes));
 
-			printf("\nSicierto: %d\n", pipe_msg);
+			printf("\nSicierto: %d\n", *pipe_msg);
 			printDNSmsg((struct dnsReply*)buffer);
 
 		}
 	}
 
+	free(pipe_msg);
+	free(in_buf);
+	free(out_buf);
 	close(sock_udp);
 
 	return 0;
