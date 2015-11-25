@@ -32,8 +32,8 @@ int main(int argc, char** argv){
 	*/
 
 	sock_udp = socket(AF_INET, SOCK_DGRAM, 0);
-	childPID = fork();
 	pipe(fd);
+	childPID = fork();
 
 	s = inet_pton(AF_INET, argv[1], buf);
         if (s <= 0) {
@@ -55,8 +55,6 @@ int main(int argc, char** argv){
 		close(fd[0]);
 
 		sent_bytes = sendDNS(sock_udp, &serverAddr, argv[2]);
-
-		printf("\nSicierto o nocierto: %d\n", sent_bytes);
 		
 		memcpy(in_buf, &sent_bytes, sizeof(sent_bytes));
 
@@ -78,8 +76,8 @@ int main(int argc, char** argv){
 			read(fd[0], out_buf, sizeof(sent_bytes));
 			memcpy(pipe_msg, out_buf, sizeof(sent_bytes));
 
-			printf("\nSicierto: %d\n", *pipe_msg);
 			printDNSmsg((struct dnsReply*)buffer);
+			printDnsAnswer((struct dnsAnswer*)(buffer+(*pipe_msg-2)));
 
 		}
 	}

@@ -64,6 +64,15 @@ struct dnsReply{
 
 };
 
+struct dnsAnswer{
+	unsigned short 	name;
+	unsigned short	type;
+	unsigned short	dns_class;
+	unsigned int 	ttl;
+	unsigned short	data_length;
+	unsigned char	addr[4];
+};
+
 void printDNSmsg(struct dnsReply* msg){
 	unsigned short rcode;
 	rcode = ntohs(msg->rcode);
@@ -149,6 +158,11 @@ void printDNSmsg(struct dnsReply* msg){
 	printf("NSCOUNT:\t%d\n", ntohs(msg->ns));
 
 	printf("ARCOUNT:\t%d\n", ntohs(msg->ar));
+
+}
+
+void printDnsAnswer(struct dnsAnswer* answer){
+	printf("\nTYPE A: %d.%d.%d.%d\n", answer->addr[0], answer->addr[1], answer->addr[2], answer->addr[3]);
 
 }
 
